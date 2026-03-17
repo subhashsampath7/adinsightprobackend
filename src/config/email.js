@@ -2,8 +2,8 @@ const nodemailer = require('nodemailer');
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 465,
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: process.env.EMAIL_PORT || 465,
     secure: true, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 const sendLicenseKeyEmail = async(email, name, licenseKey, expiresAt) => {
     try {
         const mailOptions = {
-            from: `"Google Ads Transparency" <${process.env.SMTP_USER}>`,
+            from: `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: '🎉 Your License Key is Ready!',
             html: `
@@ -86,7 +86,7 @@ const sendLicenseKeyEmail = async(email, name, licenseKey, expiresAt) => {
 const sendPaymentDeclinedEmail = async(email, name, reason) => {
     try {
         const mailOptions = {
-            from: `"Google Ads Transparency" <${process.env.SMTP_USER}>`,
+            from: `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: '❌ Payment Declined',
             html: `
