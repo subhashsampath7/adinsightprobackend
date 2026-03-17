@@ -422,13 +422,13 @@ const sendAccountActivationEmail = async (email, userName) => {
     }
 };
 
-// Dummy transporter export to prevent other files from crashing
+// Dummy transporter export to prevent server.js from crashing
 const transporter = {
     verify: (cb) => { console.log('✅ Email service ready (Via Brevo API)'); if(cb) cb(null, true); }
 };
 
 module.exports = {
-    transporter, // Keeps compatibility with server.js
+    transporter, 
     sendWelcomeEmail,
     sendLicenseKeyEmail,
     sendExpiryReminderEmail,
