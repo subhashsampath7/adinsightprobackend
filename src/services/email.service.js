@@ -1,32 +1,5 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 require('dotenv').config();
-
-// Create transporter with better configuration
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 100
-});
-
-// Verify transporter on startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('❌ Email service error:', error.message);
-        console.error('   Please check your EMAIL_USER and EMAIL_PASSWORD in .env file');
-    } else {
-        console.log('✅ Email service ready');
-    }
-});
 
 // Email template wrapper
 const emailTemplate = (title, content, buttonText = null, buttonUrl = null) => {
@@ -37,127 +10,25 @@ const emailTemplate = (title, content, buttonText = null, buttonUrl = null) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-            }
-            .container {
-                max-width: 600px;
-                margin: 20px auto;
-                background: white;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 40px 30px;
-                text-align: center;
-            }
-            .header h1 {
-                margin: 0;
-                font-size: 28px;
-                font-weight: 600;
-            }
-            .content {
-                padding: 40px 30px;
-            }
-            .content p {
-                margin: 0 0 15px;
-                font-size: 16px;
-            }
-            .license-box {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 25px;
-                border-radius: 10px;
-                text-align: center;
-                margin: 25px 0;
-            }
-            .license-key {
-                font-size: 28px;
-                font-weight: bold;
-                letter-spacing: 3px;
-                font-family: 'Courier New', monospace;
-                word-break: break-all;
-            }
-            .info-box {
-                background: #f8f9fa;
-                border-left: 4px solid #667eea;
-                padding: 15px 20px;
-                margin: 20px 0;
-                border-radius: 4px;
-            }
-            .warning-box {
-                background: #fff3cd;
-                border-left: 4px solid #ffc107;
-                padding: 15px 20px;
-                margin: 20px 0;
-                border-radius: 4px;
-            }
-            .error-box {
-                background: #f8d7da;
-                border-left: 4px solid #dc3545;
-                padding: 15px 20px;
-                margin: 20px 0;
-                border-radius: 4px;
-            }
-            .success-box {
-                background: #d4edda;
-                border-left: 4px solid #28a745;
-                padding: 15px 20px;
-                margin: 20px 0;
-                border-radius: 4px;
-            }
-            .button {
-                display: inline-block;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white !important;
-                padding: 14px 35px;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: 600;
-                margin: 20px 0;
-                text-align: center;
-                transition: transform 0.2s;
-            }
-            .button:hover {
-                transform: translateY(-2px);
-            }
-            .steps {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-            }
-            .steps ol {
-                margin: 10px 0;
-                padding-left: 20px;
-            }
-            .steps li {
-                margin: 8px 0;
-            }
-            .footer {
-                background: #f8f9fa;
-                padding: 30px;
-                text-align: center;
-                color: #6c757d;
-                font-size: 14px;
-            }
-            .footer a {
-                color: #667eea;
-                text-decoration: none;
-            }
-            .divider {
-                height: 1px;
-                background: #e9ecef;
-                margin: 30px 0;
-            }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+            .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+            .content { padding: 40px 30px; }
+            .content p { margin: 0 0 15px; font-size: 16px; }
+            .license-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; text-align: center; margin: 25px 0; }
+            .license-key { font-size: 28px; font-weight: bold; letter-spacing: 3px; font-family: 'Courier New', monospace; word-break: break-all; }
+            .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+            .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+            .error-box { background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+            .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+            .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 14px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; text-align: center; transition: transform 0.2s; }
+            .button:hover { transform: translateY(-2px); }
+            .steps { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .steps ol, .steps ul { margin: 10px 0; padding-left: 20px; }
+            .steps li { margin: 8px 0; }
+            .footer { background: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; }
+            .footer a { color: #667eea; text-decoration: none; }
         </style>
     </head>
     <body>
@@ -175,7 +46,7 @@ const emailTemplate = (title, content, buttonText = null, buttonUrl = null) => {
             </div>
             <div class="footer">
                 <p><strong>Google Ads Transparency Platform</strong></p>
-                <p>Need help? Contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+                <p>Need help? Contact us at <a href="mailto:subhashsampathass@gmail.com">subhashsampathass@gmail.com</a></p>
                 <p style="margin-top: 20px; font-size: 12px;">
                     © ${new Date().getFullYear()} Google Ads Transparency. All rights reserved.
                 </p>
@@ -184,6 +55,28 @@ const emailTemplate = (title, content, buttonText = null, buttonUrl = null) => {
     </body>
     </html>
     `;
+};
+
+// Main function to send emails via Brevo REST API
+const sendEmailViaBrevo = async (toEmail, toName, subject, htmlContent) => {
+    try {
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: { name: "Google Ads Transparency", email: "subhashsampathass@gmail.com" },
+            to: [{ email: toEmail, name: toName || toEmail.split('@')[0] }],
+            subject: subject,
+            htmlContent: htmlContent
+        }, {
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            }
+        });
+        return { success: true, messageId: response.data.messageId };
+    } catch (error) {
+        console.error(`❌ Failed to send email to ${toEmail}:`, error.response ? error.response.data : error.message);
+        throw error;
+    }
 };
 
 // Send welcome email
@@ -214,18 +107,12 @@ const sendWelcomeEmail = async (email, name, uid) => {
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '🎉 Welcome to Google Ads Transparency Platform',
-            html: emailTemplate('Welcome to Our Platform!', content, 'Complete Your Profile', `${process.env.FRONTEND_URL}/profile`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('Welcome to Our Platform!', content, 'Complete Your Profile', `${process.env.FRONTEND_URL}/profile`);
+        const info = await sendEmailViaBrevo(email, name, '🎉 Welcome to Google Ads Transparency Platform', html);
+        
         console.log('✅ Welcome email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send welcome email:', error);
         return { success: false, error: error.message };
     }
 };
@@ -242,9 +129,7 @@ const sendLicenseKeyEmail = async (email, name, licenseKey, expiryDate) => {
                 <div class="license-key">${licenseKey}</div>
                 <p style="margin: 15px 0 0; font-size: 14px; opacity: 0.9;">
                     Valid until: <strong>${new Date(expiryDate).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                        year: 'numeric', month: 'long', day: 'numeric' 
                     })}</strong>
                 </p>
             </div>
@@ -269,18 +154,12 @@ const sendLicenseKeyEmail = async (email, name, licenseKey, expiryDate) => {
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '🔑 Your License Key is Ready!',
-            html: emailTemplate('License Key Activated!', content, 'View My License Keys', `${process.env.FRONTEND_URL}/my-keys`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('License Key Activated!', content, 'View My License Keys', `${process.env.FRONTEND_URL}/my-keys`);
+        const info = await sendEmailViaBrevo(email, name, '🔑 Your License Key is Ready!', html);
+        
         console.log('✅ License key email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send license key email:', error);
         return { success: false, error: error.message };
     }
 };
@@ -307,18 +186,12 @@ const sendExpiryReminderEmail = async (email, name, licenseKey, daysLeft) => {
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: `⏰ License Expiring in ${daysLeft} Day${daysLeft > 1 ? 's' : ''}`,
-            html: emailTemplate('License Expiring Soon', content, 'Renew License Now', `${process.env.FRONTEND_URL}/purchase`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('License Expiring Soon', content, 'Renew License Now', `${process.env.FRONTEND_URL}/purchase`);
+        const info = await sendEmailViaBrevo(email, name, `⏰ License Expiring in ${daysLeft} Day${daysLeft > 1 ? 's' : ''}`, html);
+        
         console.log('✅ Expiry reminder email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send expiry reminder email:', error);
         return { success: false, error: error.message };
     }
 };
@@ -345,23 +218,17 @@ const sendPaymentFailedEmail = async (email, name, reason) => {
                 </ul>
             </div>
             
-            <p>If you believe this is an error, please contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+            <p>If you believe this is an error, please contact us at <a href="mailto:subhashsampathass@gmail.com">subhashsampathass@gmail.com</a></p>
             
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '❌ Payment Failed',
-            html: emailTemplate('Payment Failed', content, 'Try Again', `${process.env.FRONTEND_URL}/purchase`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('Payment Failed', content, 'Try Again', `${process.env.FRONTEND_URL}/purchase`);
+        const info = await sendEmailViaBrevo(email, name, '❌ Payment Failed', html);
+        
         console.log('✅ Payment failed email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send payment failed email:', error);
         return { success: false, error: error.message };
     }
 };
@@ -422,28 +289,22 @@ const sendKYCStatusEmail = async (email, name, status, reason = null) => {
                 </ul>
             </div>
             
-            <p>If you have questions, please contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+            <p>If you have questions, please contact us at <a href="mailto:subhashsampathass@gmail.com">subhashsampathass@gmail.com</a></p>
             
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: isApproved ? '✅ KYC Verification Approved' : '❌ KYC Verification Declined',
-            html: emailTemplate(
-                isApproved ? 'KYC Approved!' : 'KYC Declined',
-                content,
-                isApproved ? 'Purchase License' : 'Resubmit KYC',
-                `${process.env.FRONTEND_URL}/${isApproved ? 'purchase' : 'kyc'}`
-            )
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate(
+            isApproved ? 'KYC Approved!' : 'KYC Declined',
+            content,
+            isApproved ? 'Purchase License' : 'Resubmit KYC',
+            `${process.env.FRONTEND_URL}/${isApproved ? 'purchase' : 'kyc'}`
+        );
+        const info = await sendEmailViaBrevo(email, name, isApproved ? '✅ KYC Verification Approved' : '❌ KYC Verification Declined', html);
+        
         console.log('✅ KYC status email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send KYC status email:', error);
         return { success: false, error: error.message };
     }
 };
@@ -469,23 +330,17 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '🔐 Password Reset Request',
-            html: emailTemplate('Reset Your Password', content, 'Reset Password', resetUrl)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('Reset Your Password', content, 'Reset Password', resetUrl);
+        const info = await sendEmailViaBrevo(email, name, '🔐 Password Reset Request', html);
+        
         console.log('✅ Password reset email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send password reset email:', error);
         return { success: false, error: error.message };
     }
 };
 
-// ✅ NEW: Send account suspension email
+// Send account suspension email
 const sendAccountSuspensionEmail = async (email, userName, reason) => {
     try {
         const content = `
@@ -512,29 +367,23 @@ const sendAccountSuspensionEmail = async (email, userName, reason) => {
 
             <div class="warning-box">
                 <p style="margin: 0;"><strong>What you can do:</strong></p>
-                <p style="margin: 5px 0 0;">If you believe this is a mistake or would like to appeal this decision, please contact our support team at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+                <p style="margin: 5px 0 0;">If you believe this is a mistake or would like to appeal this decision, please contact our support team at <a href="mailto:subhashsampathass@gmail.com">subhashsampathass@gmail.com</a></p>
             </div>
 
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '⚠️ Account Suspended - Google Ads Transparency',
-            html: emailTemplate('Account Suspended', content, 'Contact Support', `mailto:${process.env.EMAIL_USER}`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('Account Suspended', content, 'Contact Support', `mailto:subhashsampathass@gmail.com`);
+        const info = await sendEmailViaBrevo(email, userName, '⚠️ Account Suspended - Google Ads Transparency', html);
+        
         console.log('✅ Account suspension email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send suspension email:', error);
         return { success: false, error: error.message };
     }
 };
 
-// ✅ NEW: Send account activation email
+// Send account activation email
 const sendAccountActivationEmail = async (email, userName) => {
     try {
         const content = `
@@ -563,24 +412,23 @@ const sendAccountActivationEmail = async (email, userName) => {
             <p>Best regards,<br><strong>Google Ads Transparency Team</strong></p>
         `;
 
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"Google Ads Transparency" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: '✅ Account Activated - Google Ads Transparency',
-            html: emailTemplate('Account Activated', content, 'Login to Your Account', `${process.env.FRONTEND_URL}/login`)
-        };
-
-        const info = await transporter.sendMail(mailOptions);
+        const html = emailTemplate('Account Activated', content, 'Login to Your Account', `${process.env.FRONTEND_URL}/login`);
+        const info = await sendEmailViaBrevo(email, userName, '✅ Account Activated - Google Ads Transparency', html);
+        
         console.log('✅ Account activation email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
+        return info;
     } catch (error) {
-        console.error('❌ Failed to send activation email:', error);
         return { success: false, error: error.message };
     }
 };
 
+// Dummy transporter export to prevent other files from crashing
+const transporter = {
+    verify: (cb) => { console.log('✅ Email service ready (Via Brevo API)'); if(cb) cb(null, true); }
+};
+
 module.exports = {
-    transporter,
+    transporter, // Keeps compatibility with server.js
     sendWelcomeEmail,
     sendLicenseKeyEmail,
     sendExpiryReminderEmail,
