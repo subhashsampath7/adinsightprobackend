@@ -2,10 +2,16 @@ const nodemailer = require('nodemailer');
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // මේක දුන්නාම host, port, secure මුකුත් ලියන්න ඕනේ නැහැ
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Port 587 නිසා මේක අනිවාර්යයෙන්ම false වෙන්න ඕනේ
+    requireTLS: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false // Railway ජාලයේ ආරක්ෂක අවහිරතා මඟහරින්න
     }
 });
 
