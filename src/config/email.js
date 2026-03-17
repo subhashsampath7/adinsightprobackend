@@ -2,13 +2,14 @@ const nodemailer = require('nodemailer');
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // host, port, secure ඔක්කොම අයින් කරලා මේ පේළිය විතරක් දාන්න
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: false, // Brevo port 587 පාවිච්චි කරන නිසා false දෙන්න
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
     }
 });
-
 // Send license key email
 const sendLicenseKeyEmail = async(email, name, licenseKey, expiresAt) => {
     try {
