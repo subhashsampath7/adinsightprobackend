@@ -2,9 +2,10 @@ const nodemailer = require('nodemailer');
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // Brevo port 587 පාවිච්චි කරන නිසා false දෙන්න
+    host: process.env.EMAIL_HOST || 'smtp-relay.brevo.com',
+    port: 2525,  // 587 වෙනුවට 2525 පාවිච්චි කරමු (Firewall bypass කරන්න)
+    secure: false, 
+    requireTLS: true, // මේක අනිවාර්යයි
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
